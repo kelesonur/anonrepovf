@@ -82,7 +82,7 @@ for (each in unique(df_cum_time$subject)){
   for(every in unique(df_cum_time$item)){
     x <- df_cum_time %>% subset(subject == each & item == every)
     for(all in c(1:6)){
-      x %<>% dplyr::arrange(subject,item, time)
+      x %<>% arrange(subject,item, time)
       time = all*10
       if (time != x$time[all] || is.na(x$time[all])){
         y <- tibble(subject = x$subject[1], group = x$group[1], item = x$item[1], category = x$category[1],
@@ -104,9 +104,3 @@ df_latency <- left_join(df_correct, df_latency) %>% mutate(srt = (time_interval 
 saveRDS(df_latency, "df_latency.rds")
 
 
-ncr_sum <- df_ncr %>% group_by(Group = group, difficulty2, cat2) %>%
-  summarise(mean_response = mean(ncr), sd = sd(ncr))
-
-
-sum2 <- sum %>% group_by(Group, cat2, difficulty) %>%
-  summarise(sd_srt = sd(mean_srt))

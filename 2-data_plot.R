@@ -11,7 +11,7 @@ loadfonts()
 
 # function for calculating %95 confidence intervals
 ci <- function(x){1.96*(sd(x)/sqrt(length(x)))}
-sd <- sd(df_latency$srt)
+
 df <- readRDS("df.rds")
 df_ncr <- readRDS("df_ncr.rds")
 # recode factors for easy read
@@ -23,10 +23,9 @@ df_correct_means <- df_time %>% group_by(Group = group, cat2, time, difficulty) 
   summarise(mean_response = mean(time_cum), ci = ci(time_cum)) %>% ungroup()
 df_latency <- readRDS("df_latency.rds")
 df_latencies <- df_latency %>% group_by(Group = group, cat2, difficulty) %>%
-  summarise(mean_srt = mean(srt), ci_srt = sd(srt))
-?sd()
-levels(df$cat2) <- c("HS", "LOC","SEM")
-levels(df_ncr$cat2) <- c("HS", "LOC","SEM")
+  summarise(mean_srt = mean(srt), ci_srt = ci(srt))
+
+
 ############################## DATA PLOTS ##############################
 # how many of things there are
 fig1 <- df %>% dplyr::select(response_type = type, cat2, Group = group) %>%
@@ -35,27 +34,18 @@ fig1 <- df %>% dplyr::select(response_type = type, cat2, Group = group) %>%
   geom_bar(position = "dodge") +
   stat_count(geom = "text", aes(color = Group, label = ..count..), vjust = "bottom", position = position_dodge(0.85)) +
   facet_grid(cat2~.) +
-  ylab("Sayý") + xlab("Yanýt Türü") +
+  ylab("SayÄ±") + xlab("Response Type") +
   theme(text=element_text(family="Times New Roman", size=12))
 
-fig1 <- fig1 + scale_colour_discrete(name = "Grup", labels = c("Erken", "Geç")) + 
-  scale_fill_discrete(name = "Grup", labels = c("Erken", "Geç")) +
-  scale_x_discrete(labels=c("Correct" = "Doðru", "Inflection" = "Çekim",
-                                "OOC" = "Yanlýþ Kategori", "Pseudo" = "Uydurma Ýþaret","Repetition" = "Tekrar"))
-ggsave("fig1.png",fig1, height = 5.5, width = 7)
 # mean correct responses
 fig2 <- df_ncr %>% group_by(Group = group, difficulty2, cat2) %>%
   summarise(mean_response = mean(ncr), ci = ci(ncr)) %>%
   ggplot(aes(difficulty2,mean_response, group = Group, color = Group)) + 
-  geom_point(size = 1.5) + geom_line(size = 1) + 
-  geom_errorbar(aes(ymax = mean_response + ci, ymin = mean_response - ci), width = .14, size = 1) +
-  facet_grid(.~cat2) + xlab("Zorluk") + ylab("Ortalama Kelime") +
-  theme(text=element_text(family= "Times New Roman", size=12)) 
+  geom_point() + geom_line() + 
+  geom_errorbar(aes(ymax = mean_response + ci, ymin = mean_response - ci), width = .14) +
+  facet_grid(.~cat2) + xlab("Difficulty") + ylab("Mean Response") +
+  theme(text=element_text(family= "Times New Roman", size=12))
 
-fig2 <- fig2 + scale_colour_discrete(name = "Grup", labels = c("Erken", "Geç")) + ylim(3.5,20) +
-  scale_x_discrete(labels=c("Easy" = "Kolay", "Med" = "Orta",
-                            "Hard" = "Zor"))
-ggsave("fig2.png",fig2, height = 3, width = 6)
 # cumulative mean responses through time course #
 diff_labs <- c("Easy","Medium","Hard")
 names(diff_labs) <- c("1","2","3")
@@ -80,9 +70,7 @@ fig3 <- ncr_model_df %>% ggplot(aes(m, y=factor(parameter,
   theme(text=element_text(family="Times New Roman", size=12)) + geom_point(size = 2) +
   geom_errorbarh(aes(xmin = l, xmax = h), alpha = 1, height = 0, size = 1) +
   geom_errorbarh(aes(xmin = ll, xmax = hh, height = 0)) + vline_0() +
-  xlab("Tahmin(log)") + ylab("Etkiler")
-
-ggsave("fig3.png",fig3)
+  xlab("Estimate(log)") + ylab("Coefficients")
 
 # number of correct responses through time course #
 time_model_df <- readRDS("time_model_df.rds")
@@ -91,7 +79,7 @@ fig5 <- time_model_df %>% ggplot(aes(m, y=factor(parameter,
   theme(text=element_text(family="Times New Roman", size=12)) + geom_point(size = 2) +
   geom_errorbarh(aes(xmin = l, xmax = h), alpha = 1, height = 0, size = 1) +
   geom_errorbarh(aes(xmin = ll, xmax = hh, height = 0)) + vline_0() +
-  xlab("Tahmin(log)") + ylab("Etkiler")
+  xlab("Estimate(log)") + ylab("Coefficients")
 
 ############################## SAVE PLOTS ##############################
 # figure 1 save
@@ -106,8 +94,8 @@ ggsave("VF-Fig_2.png", plot = fig2, width = 5, height = 2.5, path = "./VF-figure
 
 # figure 3 save
 ggsave("VF-Fig_3.pdf", plot = fig3, width = 5, height = 4, device = cairo_pdf, path = "./VF-figures")
-ggsave("VF-Fig_3.tiff", plot = fig3, width = 5, height = 4, path = "C:/Users/keles/Desktop/vf code")
-ggsave("VF-Fig_3.png", plot = fig3, width = 5, height = 4, path = "C:/Users/keles/Desktop/vf code")
+ggsave("VF-Fig_3.tiff", plot = fig3, width = 5, height = 4, path = "./VF-figures")
+ggsave("VF-Fig_3.png", plot = fig3, width = 5, height = 4, path = "./VF-figures")
 
 # figure 4 save
 ggsave("VF-Fig_4.pdf", plot = fig4, width = 6, height = 4, device = cairo_pdf, path = "./VF-figures")
@@ -117,4 +105,4 @@ ggsave("VF-Fig_4.png", plot = fig4, width = 6, height = 4, path = "./VF-figures"
 # figure 5 save
 ggsave("VF-Fig_5.pdf", plot = fig5, width = 5, height = 4, device = cairo_pdf, path = "./VF-figures")
 ggsave("VF-Fig_5.tiff", plot = fig5, width = 5, height = 4, path = "./VF-figures")
-ggsave("VF-Fig_5.png", plot = fig5, width = 5, height = 4, path = "C:/Users/keles/Desktop/vf code")
+ggsave("VF-Fig_5.png", plot = fig5, width = 5, height = 4, path = "./VF-figures")
