@@ -34,7 +34,7 @@ fig1 <- df %>% dplyr::select(response_type = type, cat2, Group = group) %>%
   geom_bar(position = "dodge") +
   stat_count(geom = "text", aes(color = Group, label = ..count..), vjust = "bottom", position = position_dodge(0.85)) +
   facet_grid(cat2~.) +
-  ylab("Sayı") + xlab("Response Type") +
+  ylab("Count") + xlab("Response Type") +
   theme(text=element_text(family="Times New Roman", size=12))
 
 # mean correct responses
@@ -59,8 +59,7 @@ fig4 <- ggplot() + geom_point(data = df_correct_means, aes(time, mean_response, 
   geom_vline(data = df_latencies, aes(xintercept = mean_srt, group = Group, color = Group)) +
   facet_grid(cat2 ~ difficulty, labeller = labeller(difficulty = diff_labs)) +
   xlab("Time") + ylab("Mean Response")
-
-x <- 
+ 
 ############################## MODEL PLOTS ##############################
 # total number of correct responses #
 ncr_model_df <- readRDS("ncr_model_df.rds") %>% head(13)
